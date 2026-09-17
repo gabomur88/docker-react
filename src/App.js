@@ -15,7 +15,7 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Learn React Concha Culo Teta
+          Learn React Me Cambiaron
         </a>
       </header>
     </div>
