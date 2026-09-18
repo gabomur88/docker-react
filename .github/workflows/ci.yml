@@ -1,4 +1,4 @@
-name: Docker React CI
+name: Docker React CI-CD
 
 on:
   push:
@@ -7,6 +7,9 @@ on:
   pull_request:
     branches:
       - master
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -21,3 +24,31 @@ jobs:
 
       - name: Ejecutar tests
         run: docker run -e CI=true docker-react-test npm test -- --watchAll=false
+
+  deploy:
+    needs: test
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+
+    permissions:
+      id-token: write
+      contents: read
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Autenticar GitHub Actions con AWS
+        uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: us-east-2
+
+      - name: Desplegar a Elastic Beanstalk
+        uses: aws-actions/aws-elasticbeanstalk-deploy@v1
+        with:
+          aws-region: us-east-2
+          application-name: docker-react
+          environment-name: docker-react-env
